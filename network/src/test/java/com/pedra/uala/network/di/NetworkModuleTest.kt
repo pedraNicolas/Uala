@@ -1,25 +1,24 @@
 package com.pedra.uala.network.di
 
+import com.pedra.uala.network.api.CitiesApi
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class NetworkModuleTest {
 
     @Test
-    fun `test citiesApi is not null`() {
+    fun `test NetworkModule provides dependencies`() {
         // When
-        val citiesApi = NetworkModule.citiesApi
+        val moshi = NetworkModule.provideMoshi()
+        val okHttpClient = NetworkModule.provideOkHttpClient()
+        val retrofit = NetworkModule.provideRetrofit(moshi, okHttpClient)
+        val citiesApi = NetworkModule.provideCitiesApi(retrofit)
 
         // Then
+        assertNotNull(moshi)
+        assertNotNull(okHttpClient)
+        assertNotNull(retrofit)
         assertNotNull(citiesApi)
-    }
-
-    @Test
-    fun `test citiesApi is instance of CitiesApi`() {
-        // When
-        val citiesApi = NetworkModule.citiesApi
-
-        // Then
-        assert(citiesApi is com.pedra.uala.network.api.CitiesApi)
+        assert(citiesApi is CitiesApi)
     }
 } 
