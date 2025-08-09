@@ -37,7 +37,7 @@ class GetCitiesUseCaseTest {
     }
 
     @Test
-    fun `test invoke without query returns all cities sorted alphabetically`() = runTest {
+    fun `test invoke returns all cities sorted alphabetically`() = runTest {
         // When
         val result = useCase()
 
@@ -51,90 +51,6 @@ class GetCitiesUseCaseTest {
         assertEquals("Madrid", result[5].name)
         assertEquals("Sydney", result[6].name)
         assertEquals("Zaragoza", result[7].name)
-    }
-
-    @Test
-    fun `test invoke with empty query returns all cities sorted`() = runTest {
-        // When
-        val result = useCase("")
-
-        // Then
-        assertEquals(8, result.size)
-        assertEquals("Alabama", result[0].name)
-        assertEquals("Zaragoza", result[7].name)
-    }
-
-    @Test
-    fun `test invoke with prefix A returns cities starting with A`() = runTest {
-        // When
-        val result = useCase("A")
-
-        // Then
-        assertEquals(4, result.size)
-        assertEquals("Alabama", result[0].name)
-        assertEquals("Albuquerque", result[1].name)
-        assertEquals("Anaheim", result[2].name)
-        assertEquals("Arizona", result[3].name)
-    }
-
-    @Test
-    fun `test invoke with prefix s returns only Sydney`() = runTest {
-        // When
-        val result = useCase("s")
-
-        // Then
-        assertEquals(1, result.size)
-        assertEquals("Sydney", result[0].name)
-    }
-
-    @Test
-    fun `test invoke with prefix Al returns Alabama and Albuquerque`() = runTest {
-        // When
-        val result = useCase("Al")
-
-        // Then
-        assertEquals(2, result.size)
-        assertEquals("Alabama", result[0].name)
-        assertEquals("Albuquerque", result[1].name)
-    }
-
-    @Test
-    fun `test invoke with prefix Alb returns only Albuquerque`() = runTest {
-        // When
-        val result = useCase("Alb")
-
-        // Then
-        assertEquals(1, result.size)
-        assertEquals("Albuquerque", result[0].name)
-    }
-
-    @Test
-    fun `test invoke with prefix S returns Sydney`() = runTest {
-        // When
-        val result = useCase("S")
-
-        // Then
-        assertEquals(1, result.size)
-        assertEquals("Sydney", result[0].name)
-    }
-
-    @Test
-    fun `test invoke with case insensitive prefix`() = runTest {
-        // When
-        val result = useCase("SYD")
-
-        // Then
-        assertEquals(1, result.size)
-        assertEquals("Sydney", result[0].name)
-    }
-
-    @Test
-    fun `test invoke returns empty list when no matches found`() = runTest {
-        // When
-        val result = useCase("Berlin")
-
-        // Then
-        assertEquals(0, result.size)
     }
 
     @Test
