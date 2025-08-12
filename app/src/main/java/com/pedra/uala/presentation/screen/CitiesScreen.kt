@@ -1,5 +1,6 @@
 package com.pedra.uala.presentation.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,41 +20,64 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedra.uala.presentation.model.CityUiModel
 import com.pedra.uala.presentation.state.CitiesUiState
 import com.pedra.uala.presentation.viewmodel.CitiesViewModel
+import com.pedra.uala.presentation.viewmodel.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CitiesScreen(
-    onCityClick: (Int) -> Unit,
-    onMapClick: (Int) -> Unit,
-    viewModel: CitiesViewModel = hiltViewModel()
+    onCityClick: (CityUiModel) -> Unit,
+    onMapClick: () -> Unit,
+    viewModel: CitiesViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel,
+    showTopBar: Boolean = true,
+    showMapButton: Boolean = showTopBar,
+    selectedCityId: Int? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
-    var searchQuery by remember { mutableStateOf("") }
+    
+    // Combine states to avoid multiple recompositions
+    val combinedState by remember(uiState, favorites) {
+        derivedStateOf {
+            when (val currentState = uiState) {
+                is CitiesUiState.Success -> {
+                    val citiesWithFavorites = currentState.cities.map { city ->
+                        city.copy(isFavorite = favorites.contains(city.id))
+                    }
+                    Triple(
+                        citiesWithFavorites,
+                        currentState.searchQuery,
+                        currentState.showFavoritesOnly
+                    )
+                }
+                else -> Triple(emptyList<CityUiModel>(), "", false)
+            }
+        }
+    }
+    
+    val (cities, searchQuery, showFavoritesOnly) = combinedState
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Cities") },
-                actions = {
-                    IconButton(
-                        onClick = { viewModel.toggleFavoritesOnly() }
-                    ) {
-                        val isShowingFavorites = when (val currentState = uiState) {
-                            is CitiesUiState.Success -> currentState.showFavoritesOnly
-                            else -> false
+            if (showTopBar) {
+                TopAppBar(
+                    title = { Text("Cities") },
+                    actions = {
+                        IconButton(
+                            onClick = { viewModel.toggleFavoritesOnly() }
+                        ) {
+                            Icon(
+                                imageVector = if (showFavoritesOnly) {
+                                    Icons.Default.Favorite
+                                } else {
+                                    Icons.Default.FavoriteBorder
+                                },
+                                contentDescription = "Toggle favorites"
+                            )
                         }
-                        Icon(
-                            imageVector = if (isShowingFavorites) {
-                                Icons.Default.Favorite
-                            } else {
-                                Icons.Default.FavoriteBorder
-                            },
-                            contentDescription = "Toggle favorites"
-                        )
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -60,11 +85,9 @@ fun CitiesScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Search Bar
             SearchBar(
                 query = searchQuery,
                 onQueryChange = { query ->
-                    searchQuery = query
                     viewModel.searchCities(query)
                 },
                 modifier = Modifier
@@ -72,7 +95,6 @@ fun CitiesScreen(
                     .padding(16.dp)
             )
 
-            // Content
             when (val currentState = uiState) {
                 is CitiesUiState.Loading -> {
                     Box(
@@ -83,16 +105,21 @@ fun CitiesScreen(
                     }
                 }
                 is CitiesUiState.Success -> {
-                    if (currentState.cities.isEmpty()) {
+                    if (cities.isEmpty()) {
                         EmptyState()
                     } else {
                         CitiesList(
-                            cities = currentState.cities,
+                            cities = cities,
                             onCityClick = onCityClick,
-                            onMapClick = onMapClick,
+                            onMapClick = { city ->
+                                sharedViewModel.selectCity(city)
+                                onMapClick()
+                            },
                             onFavoriteToggle = { cityId ->
                                 viewModel.toggleFavorite(cityId)
-                            }
+                            },
+                            showMapButton = showMapButton,
+                            selectedCityId = selectedCityId
                         )
                     }
                 }
@@ -135,23 +162,27 @@ private fun SearchBar(
 @Composable
 private fun CitiesList(
     cities: List<CityUiModel>,
-    onCityClick: (Int) -> Unit,
-    onMapClick: (Int) -> Unit,
-    onFavoriteToggle: (Int) -> Unit
+    onCityClick: (CityUiModel) -> Unit,
+    onMapClick: (CityUiModel) -> Unit,
+    onFavoriteToggle: (Int) -> Unit,
+    showMapButton: Boolean,
+    selectedCityId: Int?
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(cities) { city ->
-            CityItem(
-                city = city,
-                onCityClick = { onCityClick(city.id) },
-                onMapClick = { onMapClick(city.id) },
-                onFavoriteToggle = { onFavoriteToggle(city.id) }
-            )
-        }
+                            items(cities) { city ->
+                        CityItem(
+                            city = city,
+                            onCityClick = { onCityClick(city) },
+                            onMapClick = { onMapClick(city) },
+                            onFavoriteToggle = { onFavoriteToggle(city.id) },
+                            showMapButton = showMapButton,
+                            isSelected = city.id == selectedCityId
+                        )
+                    }
     }
 }
 
@@ -161,11 +192,29 @@ private fun CityItem(
     city: CityUiModel,
     onCityClick: () -> Unit,
     onMapClick: () -> Unit,
-    onFavoriteToggle: () -> Unit
+    onFavoriteToggle: () -> Unit,
+    showMapButton: Boolean = true,
+    isSelected: Boolean = false
 ) {
     Card(
         onClick = onCityClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 8.dp else 2.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        border = if (isSelected) {
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else null
     ) {
         Row(
             modifier = Modifier
@@ -192,11 +241,13 @@ private fun CityItem(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconButton(onClick = onMapClick) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "View on map"
-                    )
+                if (showMapButton) {
+                    IconButton(onClick = onMapClick) {
+                        Icon(
+                            imageVector = Icons.Default.Map,
+                            contentDescription = "View on map"
+                        )
+                    }
                 }
                 
                 IconButton(onClick = onFavoriteToggle) {
