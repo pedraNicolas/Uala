@@ -1,13 +1,11 @@
 *.iml
 .gradle
-/local.properties
 /.idea
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 
 # Built application files
 *.apk
@@ -31,7 +29,7 @@ out/
 build/
 
 # Local configuration file (sdk path, etc)
-local.properties
+# local.properties
 
 # Log Files
 *.log
@@ -58,3 +56,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Kotlin compiler temporary files
+.kotlin/
