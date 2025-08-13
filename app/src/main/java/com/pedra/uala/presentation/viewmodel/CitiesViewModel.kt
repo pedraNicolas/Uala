@@ -90,7 +90,6 @@ class CitiesViewModel @Inject constructor(
     }
 
     private fun updateUiState(cities: List<City>? = null) {
-        // Si las ciudades no están cargadas, mantener loading
         if (!citiesLoaded) {
             _uiState.value = CitiesUiState.Loading
             return
