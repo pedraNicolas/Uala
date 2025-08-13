@@ -30,6 +30,13 @@
     <string name="city_display_format">%1$s, %2$s</string>
     <string name="city_coordinates_format">Lat: %1$.6f, Lon: %2$.6f</string>
     <string name="city_detail_format">City Detail: %1$s</string>
+    <string name="city_detail_country">País</string>
+    <string name="city_detail_coordinates">Coordenadas</string>
+    <string name="city_detail_latitude">Latitud</string>
+    <string name="city_detail_longitude">Longitud</string>
+    <string name="city_detail_view_on_map">Ver en mapa</string>
+    <string name="city_detail_add_to_favorites">Agregar a favoritos</string>
+    <string name="city_detail_remove_from_favorites">Quitar de favoritos</string>
     
     <!-- Default Values -->
     <string name="default_empty_string"></string>
