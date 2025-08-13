@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pedra.uala.domain.model.City
 import com.pedra.uala.domain.usecase.GetCitiesUseCase
 import com.pedra.uala.domain.usecase.FilterCitiesUseCase
+import com.pedra.uala.domain.usecase.FavoritesUseCase
 import com.pedra.uala.presentation.mapper.toUiModel
 import com.pedra.uala.presentation.state.CitiesUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,13 +13,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CitiesViewModel @Inject constructor(
     private val getCitiesUseCase: GetCitiesUseCase,
-    private val filterCitiesUseCase: FilterCitiesUseCase
+    private val filterCitiesUseCase: FilterCitiesUseCase,
+    private val favoritesUseCase: FavoritesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CitiesUiState>(CitiesUiState.Loading)
@@ -30,9 +33,12 @@ class CitiesViewModel @Inject constructor(
     private var allCities = emptyList<City>()
     private var currentSearchQuery = ""
     private var showFavoritesOnly = false
+    private var citiesLoaded = false
+    private var favoritesLoaded = false
 
     init {
         loadCities()
+        loadFavorites()
     }
 
     fun loadCities() {
@@ -41,6 +47,7 @@ class CitiesViewModel @Inject constructor(
             
             try {
                 allCities = getCitiesUseCase()
+                citiesLoaded = true
                 updateUiState()
             } catch (e: Exception) {
                 _uiState.value = CitiesUiState.Error(e.message ?: "Error loading cities")
@@ -63,18 +70,29 @@ class CitiesViewModel @Inject constructor(
         updateUiState()
     }
 
-    fun toggleFavorite(cityId: Int) {
-        _favorites.update { currentFavorites ->
-            if (currentFavorites.contains(cityId)) {
-                currentFavorites - cityId
-            } else {
-                currentFavorites + cityId
+    private fun loadFavorites() {
+        viewModelScope.launch {
+            favoritesUseCase.getFavorites().collectLatest { favorites ->
+                _favorites.value = favorites
+                favoritesLoaded = true
+                updateUiState()
             }
         }
-        updateUiState()
+    }
+
+    fun toggleFavorite(cityId: Int) {
+        viewModelScope.launch {
+            favoritesUseCase.toggleFavorite(cityId)
+        }
     }
 
     private fun updateUiState(cities: List<City>? = null) {
+        // Si las ciudades no están cargadas, mantener loading
+        if (!citiesLoaded) {
+            _uiState.value = CitiesUiState.Loading
+            return
+        }
+        
         val citiesToProcess = cities ?: allCities
         
         val uiCities = citiesToProcess.map { city ->
