@@ -10,6 +10,7 @@
     <!-- Search -->
     <string name="search_placeholder">Search cities...</string>
     <string name="search_content_description">Search</string>
+    <string name="clear_search_content_description">Clear search</string>
     
     <!-- Buttons -->
     <string name="btn_toggle_favorites">Toggle favorites</string>

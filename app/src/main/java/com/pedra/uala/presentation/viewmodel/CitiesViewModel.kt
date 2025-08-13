@@ -14,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,12 +59,7 @@ class CitiesViewModel @Inject constructor(
 
     fun searchCities(query: String) {
         currentSearchQuery = query
-        try {
-            val filteredCities = filterCitiesUseCase(allCities, query)
-            updateUiState(filteredCities)
-        } catch (e: Exception) {
-            _uiState.value = CitiesUiState.Error(e.message ?: context.getString(R.string.msg_error_searching_cities))
-        }
+        updateUiState()
     }
 
     fun toggleFavoritesOnly() {
@@ -75,34 +69,65 @@ class CitiesViewModel @Inject constructor(
 
     private fun loadFavorites() {
         viewModelScope.launch {
-            favoritesUseCase.getFavorites().collectLatest { favorites ->
-                _favorites.value = favorites
-                favoritesLoaded = true
-                updateUiState()
+            try {
+                favoritesUseCase.getFavorites().collectLatest { favorites ->
+                    _favorites.value = favorites
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _favorites.value = emptySet()
             }
+            favoritesLoaded = true
+            updateUiState()
         }
     }
 
     fun toggleFavorite(cityId: Int) {
         viewModelScope.launch {
-            favoritesUseCase.toggleFavorite(cityId)
+            try {
+                val currentFavorites = _favorites.value.toMutableSet()
+                if (currentFavorites.contains(cityId)) {
+                    currentFavorites.remove(cityId)
+                } else {
+                    currentFavorites.add(cityId)
+                }
+                _favorites.value = currentFavorites
+                
+                updateUiState()
+                
+                favoritesUseCase.toggleFavorite(cityId)
+            } catch (e: Exception) {
+                loadFavorites()
+            }
         }
     }
 
-    private fun updateUiState(cities: List<City>? = null) {
+    private fun updateUiState() {
         if (!citiesLoaded) {
             _uiState.value = CitiesUiState.Loading
             return
         }
         
-        val citiesToProcess = cities ?: allCities
+        val citiesToProcess = when {
+            showFavoritesOnly && currentSearchQuery.isBlank() -> {
+                allCities.filter { city -> _favorites.value.contains(city.id) }
+            }
+            else -> {
+                try {
+                    filterCitiesUseCase(allCities, currentSearchQuery)
+                } catch (e: Exception) {
+                    _uiState.value = CitiesUiState.Error(e.message ?: context.getString(R.string.msg_error_searching_cities))
+                    return
+                }
+            }
+        }
         
         val uiCities = citiesToProcess.map { city ->
             val isFavorite = _favorites.value.contains(city.id)
             city.toUiModel(context, isFavorite)
         }
 
-        val filteredCities = if (showFavoritesOnly) {
+        val filteredCities = if (showFavoritesOnly && currentSearchQuery.isNotBlank()) {
             uiCities.filter { it.isFavorite }
         } else {
             uiCities
