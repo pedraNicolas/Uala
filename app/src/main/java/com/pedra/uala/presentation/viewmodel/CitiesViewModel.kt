@@ -1,7 +1,9 @@
 package com.pedra.uala.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pedra.uala.R
 import com.pedra.uala.domain.model.City
 import com.pedra.uala.domain.usecase.GetCitiesUseCase
 import com.pedra.uala.domain.usecase.FilterCitiesUseCase
@@ -21,7 +23,8 @@ import javax.inject.Inject
 class CitiesViewModel @Inject constructor(
     private val getCitiesUseCase: GetCitiesUseCase,
     private val filterCitiesUseCase: FilterCitiesUseCase,
-    private val favoritesUseCase: FavoritesUseCase
+    private val favoritesUseCase: FavoritesUseCase,
+    private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CitiesUiState>(CitiesUiState.Loading)
@@ -50,7 +53,7 @@ class CitiesViewModel @Inject constructor(
                 citiesLoaded = true
                 updateUiState()
             } catch (e: Exception) {
-                _uiState.value = CitiesUiState.Error(e.message ?: "Error loading cities")
+                _uiState.value = CitiesUiState.Error(e.message ?: context.getString(R.string.msg_error_loading_cities))
             }
         }
     }
@@ -61,7 +64,7 @@ class CitiesViewModel @Inject constructor(
             val filteredCities = filterCitiesUseCase(allCities, query)
             updateUiState(filteredCities)
         } catch (e: Exception) {
-            _uiState.value = CitiesUiState.Error(e.message ?: "Error searching cities")
+            _uiState.value = CitiesUiState.Error(e.message ?: context.getString(R.string.msg_error_searching_cities))
         }
     }
 
@@ -97,7 +100,7 @@ class CitiesViewModel @Inject constructor(
         
         val uiCities = citiesToProcess.map { city ->
             val isFavorite = _favorites.value.contains(city.id)
-            city.toUiModel(isFavorite)
+            city.toUiModel(context, isFavorite)
         }
 
         val filteredCities = if (showFavoritesOnly) {

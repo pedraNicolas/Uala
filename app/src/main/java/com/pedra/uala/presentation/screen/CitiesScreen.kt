@@ -13,10 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pedra.uala.R
 import com.pedra.uala.presentation.model.CityUiModel
 import com.pedra.uala.presentation.state.CitiesUiState
 import com.pedra.uala.presentation.viewmodel.CitiesViewModel
@@ -61,7 +63,7 @@ fun CitiesScreen(
         topBar = {
             if (showTopBar) {
                 TopAppBar(
-                    title = { Text("Cities") },
+                    title = { Text(stringResource(R.string.title_cities)) },
                     actions = {
                         IconButton(
                             onClick = { viewModel.toggleFavoritesOnly() }
@@ -72,7 +74,7 @@ fun CitiesScreen(
                                 } else {
                                     Icons.Default.FavoriteBorder
                                 },
-                                contentDescription = "Toggle favorites"
+                                contentDescription = stringResource(R.string.btn_toggle_favorites)
                             )
                         }
                     }
@@ -147,11 +149,11 @@ private fun SearchBar(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Search cities...") },
+        placeholder = { Text(stringResource(R.string.search_placeholder)) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search"
+                contentDescription = stringResource(R.string.search_content_description)
             )
         },
         modifier = modifier,
@@ -245,7 +247,7 @@ private fun CityItem(
                     IconButton(onClick = onMapClick) {
                         Icon(
                             imageVector = Icons.Default.Map,
-                            contentDescription = "View on map"
+                            contentDescription = stringResource(R.string.btn_view_on_map)
                         )
                     }
                 }
@@ -257,7 +259,7 @@ private fun CityItem(
                         } else {
                             Icons.Default.FavoriteBorder
                         },
-                        contentDescription = "Toggle favorite",
+                        contentDescription = stringResource(R.string.btn_toggle_favorite),
                         tint = if (city.isFavorite) {
                             MaterialTheme.colorScheme.primary
                         } else {
@@ -281,11 +283,11 @@ private fun EmptyState() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "No cities found",
+                text = stringResource(R.string.msg_no_cities_found),
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "Try adjusting your search or filters",
+                text = stringResource(R.string.msg_try_adjusting_search),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -307,7 +309,7 @@ private fun ErrorState(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Error",
+                text = stringResource(R.string.msg_error),
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
@@ -316,7 +318,7 @@ private fun ErrorState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Button(onClick = onRetry) {
-                Text("Retry")
+                Text(stringResource(R.string.btn_retry))
             }
         }
     }
