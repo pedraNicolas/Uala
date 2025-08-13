@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -29,30 +30,30 @@ fun CitiesApp() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = NavRoutes.Cities.route
+            startDestination = NavRoutes.CITIES.route
         ) {
-            composable(NavRoutes.Cities.route) {
+            composable(NavRoutes.CITIES.route) {
                 AdaptiveCitiesScreen(
                     onCityClick = { city: CityUiModel ->
                         sharedViewModel.selectCity(city)
-                        navController.navigate(NavRoutes.CityDetail.route)
+                        navController.navigate(NavRoutes.CITY_DETAIL.route)
                     },
                     onMapClick = {
-                        navController.navigate(NavRoutes.Map.route)
+                        navController.navigate(NavRoutes.MAP.route)
                     },
                     sharedViewModel = sharedViewModel
                 )
             }
             
-            composable(NavRoutes.CityDetail.route) {
+            composable(NavRoutes.CITY_DETAIL.route) {
                 // TODO: Implement CityDetailScreen
                 // La ciudad seleccionada está en sharedViewModel.uiState
                 val uiState by sharedViewModel.uiState.collectAsState()
                 val selectedCity = uiState.selectedCity
-                Text("City Detail: ${selectedCity?.name ?: "No city selected"}")
+                Text(stringResource(R.string.city_detail_format, selectedCity?.name ?: stringResource(R.string.msg_no_city_selected)))
             }
             
-            composable(NavRoutes.Map.route) {
+            composable(NavRoutes.MAP.route) {
                 MapScreen(
                     onBackClick = { navController.popBackStack() },
                     sharedViewModel = sharedViewModel

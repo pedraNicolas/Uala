@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -23,6 +24,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.pedra.uala.R
 import com.pedra.uala.presentation.viewmodel.MapViewModel
 import com.pedra.uala.presentation.viewmodel.SharedViewModel
 import androidx.compose.material.icons.Icons
@@ -81,7 +83,7 @@ fun MapScreen(
                 TopAppBar(
                     title = { 
                         Text(
-                            text = sharedState.selectedCity?.displayName ?: "Mapa",
+                            text = sharedState.selectedCity?.displayName ?: stringResource(R.string.title_map),
                             style = MaterialTheme.typography.titleMedium
                         )
                     },
@@ -89,7 +91,7 @@ fun MapScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Volver"
+                                contentDescription = stringResource(R.string.btn_back)
                             )
                         }
                     },
@@ -120,8 +122,8 @@ fun MapScreen(
                 if (sharedState.selectedCity != null) {
                     Marker(
                         state = markerState,
-                        title = sharedState.selectedCity?.displayName ?: "Ciudad seleccionada",
-                        snippet = "Lat: ${markerState.position.latitude}, Lon: ${markerState.position.longitude}"
+                        title = sharedState.selectedCity?.displayName ?: stringResource(R.string.title_selected_city),
+                        snippet = stringResource(R.string.city_coordinates_format, markerState.position.latitude, markerState.position.longitude)
                     )
                 }
             }
