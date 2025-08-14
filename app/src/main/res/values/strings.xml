@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">Uala</string>
+    
+    <!-- Screen Titles -->
+    <string name="title_cities">Cities</string>
+    <string name="title_map">Mapa</string>
+    <string name="title_city_detail">City Detail</string>
+    <string name="title_selected_city">Ciudad seleccionada</string>
+    
+    <!-- Search -->
+    <string name="search_placeholder">Search cities...</string>
+    <string name="search_content_description">Search</string>
+    <string name="clear_search_content_description">Clear search</string>
+    
+    <!-- Buttons -->
+    <string name="btn_toggle_favorites">Toggle favorites</string>
+    <string name="btn_view_on_map">View on map</string>
+    <string name="btn_toggle_favorite">Toggle favorite</string>
+    <string name="btn_back">Volver</string>
+    <string name="btn_retry">Retry</string>
+    
+    <!-- Messages -->
+    <string name="msg_no_cities_found">No cities found</string>
+    <string name="msg_try_adjusting_search">Try adjusting your search or filters</string>
+    <string name="msg_error">Error</string>
+    <string name="msg_error_loading_cities">Error loading cities</string>
+    <string name="msg_error_searching_cities">Error searching cities</string>
+    <string name="msg_no_city_selected">No city selected</string>
+    
+    <!-- City Information -->
+    <string name="city_display_format">%1$s, %2$s</string>
+    <string name="city_coordinates_format">Lat: %1$.6f, Lon: %2$.6f</string>
+    <string name="city_detail_format">City Detail: %1$s</string>
+    <string name="city_detail_country">País</string>
+    <string name="city_detail_coordinates">Coordenadas</string>
+    <string name="city_detail_latitude">Latitud</string>
+    <string name="city_detail_longitude">Longitud</string>
+    <string name="city_detail_view_on_map">Ver en mapa</string>
+    <string name="city_detail_add_to_favorites">Agregar a favoritos</string>
+    <string name="city_detail_remove_from_favorites">Quitar de favoritos</string>
+    
+    <!-- Default Values -->
+    <string name="default_empty_string"></string>
+    <string name="default_search_query"></string>
 </resources>
